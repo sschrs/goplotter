@@ -59,6 +59,8 @@ func (plot *Plot) plotPoints(img *image.RGBA) *image.RGBA {
 		return img
 	}
 	for _, point := range plot.Points {
+		point.X -= point.pointShape.Bounds().Size().X / 2
+		point.Y -= point.pointShape.Bounds().Size().Y / 2
 		for x := point.X; x <= point.X+point.pointShape.Bounds().Size().X; x++ {
 			for y := point.Y; y <= point.Y+point.pointShape.Bounds().Size().Y; y++ {
 				r, g, b, a := point.pointShape.At(x-point.X, y-point.Y).RGBA()
