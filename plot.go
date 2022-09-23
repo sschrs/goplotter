@@ -11,6 +11,7 @@ type Plot struct {
 	Width, Height         int
 	Title, XLabel, YLabel string
 	BackroundColor        color.Color
+	Points                []Point
 }
 
 func NewPlot(width, height int) *Plot {
@@ -21,7 +22,7 @@ func NewPlot(width, height int) *Plot {
 	}
 }
 
-func (plot Plot) Draw(path string) error {
+func (plot *Plot) Draw(path string) error {
 	upLeft := image.Point{X: 0, Y: 0}
 	lowReight := image.Point{X: plot.Width, Y: plot.Height}
 
@@ -41,4 +42,14 @@ func (plot Plot) Draw(path string) error {
 	png.Encode(f, img)
 
 	return nil
+}
+
+func (plot *Plot) AddPoint(point Point) {
+	plot.Points = append(plot.Points, point)
+}
+
+func (plot *Plot) AddPoints(points []Point) {
+	for _, point := range points {
+		plot.Points = append(plot.Points, point)
+	}
 }
