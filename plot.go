@@ -1,6 +1,9 @@
 package goplotter
 
 import (
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/inconsolata"
+	"golang.org/x/image/math/fixed"
 	"image"
 	"image/color"
 	"image/png"
@@ -72,7 +75,7 @@ func (plot *Plot) AddLines(lines []Line) {
 }
 
 func (plot *Plot) plotAxes() {
-	padding := 50
+	padding := 70
 	xLine := NewLine(padding, plot.Height-padding, plot.Width-padding, plot.Height-padding, plot.AxisY.Width, plot.AxisY.Color)
 	yLine := NewLine(padding, padding, padding, plot.Height-padding, plot.AxisX.Width, plot.AxisX.Color)
 	plot.AddLines([]Line{xLine, yLine})
@@ -94,7 +97,6 @@ func (plot *Plot) plotAxes() {
 		}
 
 	}
-
 }
 
 func (plot *Plot) plotPoints(img *image.RGBA) *image.RGBA {
@@ -134,4 +136,17 @@ func (plot *Plot) plotLines(img *image.RGBA) *image.RGBA {
 
 	}
 	return img
+}
+
+func (plot *Plot) plotText(img *image.RGBA, x, y int, text string, clr color.Color) {
+	point := fixed.Point26_6{fixed.I(x), fixed.I(y)}
+
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  image.NewUniform(clr),
+		Face: inconsolata.Bold8x16,
+		Dot:  point,
+	}
+
+	d.DrawString(text)
 }
