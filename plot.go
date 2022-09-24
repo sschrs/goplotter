@@ -1,6 +1,7 @@
 package goplotter
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -88,8 +89,24 @@ func (plot *Plot) AddLines(lines []Line) {
 
 func (plot *Plot) plotLines(img *image.RGBA) *image.RGBA {
 	for _, line := range plot.Lines {
-		x0, x1, y0, y1 := line.StartX-line.Width/2, line.EndX-line.Width/2, line.StartY, line.EndY
-		img = bresenhamLine(x0, x1, y0, y1, img)
+		slope := float64(line.EndY-line.StartY) / float64(line.EndX-line.StartX)
+		fmt.Println(slope)
+		if slope > 1 {
+			x0, x1, y0, y1 := line.StartX-line.Width/2, line.EndX-line.Width/2, line.StartY, line.EndY
+			for i := 0; i < line.Width; i++ {
+				img = bresenhamLine(x0, x1, y0, y1, img)
+				x0++
+				x1++
+			}
+		} else {
+			x0, x1, y0, y1 := line.StartX, line.EndX, line.StartY-line.Width/2, line.EndY-line.Width/2
+			for i := 0; i < line.Width; i++ {
+				img = bresenhamLine(x0, x1, y0, y1, img)
+				y0++
+				y1++
+			}
+		}
+
 	}
 	return img
 }
