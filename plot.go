@@ -12,6 +12,7 @@ type Plot struct {
 	Title, XLabel, YLabel string
 	BackroundColor        color.Color
 	Points                []Point
+	Lines                 []Line
 }
 
 func NewPlot(width, height int) *Plot {
@@ -71,4 +72,14 @@ func (plot *Plot) plotPoints(img *image.RGBA) *image.RGBA {
 		}
 	}
 	return img
+}
+
+func (plot *Plot) AddLine(line Line) {
+	plot.Lines = append(plot.Lines, line)
+}
+
+func (plot *Plot) AddLines(lines []Line) {
+	for _, line := range lines {
+		plot.Lines = append(plot.Lines, line)
+	}
 }
