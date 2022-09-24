@@ -16,11 +16,13 @@ type Plot struct {
 	AxisX, AxisY          Axis
 }
 
-func NewPlot(width, height int) *Plot {
+func NewPlot(width, height int, axisX, axisY Axis) *Plot {
 	return &Plot{
 		Width:          width,
 		Height:         height,
 		BackroundColor: color.White,
+		AxisX:          axisX,
+		AxisY:          axisY,
 	}
 }
 
@@ -35,7 +37,7 @@ func (plot *Plot) Draw(path string) error {
 			img.Set(x, y, plot.BackroundColor)
 		}
 	}
-
+	plot.plotAxes()
 	img = plot.plotLines(img)
 	img = plot.plotPoints(img)
 
@@ -59,6 +61,42 @@ func (plot *Plot) AddPoints(points []Point) {
 	}
 }
 
+func (plot *Plot) AddLine(line Line) {
+	plot.Lines = append(plot.Lines, line)
+}
+
+func (plot *Plot) AddLines(lines []Line) {
+	for _, line := range lines {
+		plot.Lines = append(plot.Lines, line)
+	}
+}
+
+func (plot *Plot) plotAxes() {
+	padding := 50
+	xLine := NewLine(padding, plot.Height-padding, plot.Width-padding, plot.Height-padding, plot.AxisY.Width, plot.AxisY.Color)
+	yLine := NewLine(padding, padding, padding, plot.Height-padding, plot.AxisX.Width, plot.AxisX.Color)
+	plot.AddLines([]Line{xLine, yLine})
+
+	if len(plot.AxisX.Labels) > 0 {
+		xInterval := (xLine.EndX - xLine.StartX) / len(plot.AxisX.Labels)
+		y := plot.Height - padding
+		for i := xLine.StartX; i <= xLine.EndX; i += xInterval {
+			plot.AddLine(NewLine(i, y-5, i, y+5, plot.AxisX.Width, plot.AxisX.Color))
+		}
+
+	}
+
+	if len(plot.AxisY.Labels) > 0 {
+		yInterval := (yLine.EndY - yLine.StartY) / len(plot.AxisY.Labels)
+		x := padding
+		for i := yLine.StartY; i <= yLine.EndY; i += yInterval {
+			plot.AddLine(NewLine(x-5, i, x+5, i, plot.AxisY.Width, plot.AxisY.Color))
+		}
+
+	}
+
+}
+
 func (plot *Plot) plotPoints(img *image.RGBA) *image.RGBA {
 	for _, point := range plot.Points {
 		point.X -= point.pointShape.Bounds().Size().X / 2
@@ -73,16 +111,6 @@ func (plot *Plot) plotPoints(img *image.RGBA) *image.RGBA {
 		}
 	}
 	return img
-}
-
-func (plot *Plot) AddLine(line Line) {
-	plot.Lines = append(plot.Lines, line)
-}
-
-func (plot *Plot) AddLines(lines []Line) {
-	for _, line := range lines {
-		plot.Lines = append(plot.Lines, line)
-	}
 }
 
 func (plot *Plot) plotLines(img *image.RGBA) *image.RGBA {
