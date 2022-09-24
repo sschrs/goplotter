@@ -35,6 +35,7 @@ func (plot *Plot) Draw(path string) error {
 		}
 	}
 	img = plot.plotPoints(img)
+	img = plot.plotLines(img)
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -56,9 +57,6 @@ func (plot *Plot) AddPoints(points []Point) {
 }
 
 func (plot *Plot) plotPoints(img *image.RGBA) *image.RGBA {
-	if len(plot.Points) <= 0 {
-		return img
-	}
 	for _, point := range plot.Points {
 		point.X -= point.pointShape.Bounds().Size().X / 2
 		point.Y -= point.pointShape.Bounds().Size().Y / 2
@@ -82,4 +80,18 @@ func (plot *Plot) AddLines(lines []Line) {
 	for _, line := range lines {
 		plot.Lines = append(plot.Lines, line)
 	}
+}
+
+func (plot *Plot) plotLines(img *image.RGBA) *image.RGBA {
+	for _, line := range plot.Lines {
+		slope := float64(line.EndY-line.StartY) / float64(line.EndX-line.StartX)
+		intercept := float64(line.StartY) - (slope * float64(line.StartX))
+		for x := line.StartX; x <= line.EndX; x++ {
+			y := int(float64(x)*slope + intercept)
+			for i := y - int(line.Width/2); i <= y+int(line.Width/2); i++ {
+				img.Set(x, i, color.Black)
+			}
+		}
+	}
+	return img
 }
