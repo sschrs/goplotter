@@ -7,7 +7,7 @@ import (
 )
 
 func SavePNG(img *image.RGBA, path string) error {
-	f, err := os.Create("plots.png")
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
