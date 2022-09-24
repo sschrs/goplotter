@@ -1,6 +1,7 @@
 package goplotter
 
 import (
+	"fmt"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/inconsolata"
 	"golang.org/x/image/math/fixed"
@@ -16,10 +17,10 @@ type Plot struct {
 	BackroundColor        color.Color
 	Points                []Point
 	Lines                 []Line
-	AxisX, AxisY          Axis
+	AxisX, AxisY          *Axis
 }
 
-func NewPlot(width, height int, axisX, axisY Axis) *Plot {
+func NewPlot(width, height int, axisX, axisY *Axis) *Plot {
 	return &Plot{
 		Width:          width,
 		Height:         height,
@@ -40,7 +41,7 @@ func (plot *Plot) Draw(path string) error {
 			img.Set(x, y, plot.BackroundColor)
 		}
 	}
-	plot.plotAxes()
+	plot.plotAxes(img)
 	img = plot.plotLines(img)
 	img = plot.plotPoints(img)
 
@@ -74,26 +75,45 @@ func (plot *Plot) AddLines(lines []Line) {
 	}
 }
 
-func (plot *Plot) plotAxes() {
+func (plot *Plot) plotAxes(img *image.RGBA) {
 	padding := 70
 	xLine := NewLine(padding, plot.Height-padding, plot.Width-padding, plot.Height-padding, plot.AxisY.Width, plot.AxisY.Color)
 	yLine := NewLine(padding, padding, padding, plot.Height-padding, plot.AxisX.Width, plot.AxisX.Color)
 	plot.AddLines([]Line{xLine, yLine})
 
 	if len(plot.AxisX.Labels) > 0 {
-		xInterval := (xLine.EndX - xLine.StartX) / len(plot.AxisX.Labels)
+		xInterval := (xLine.EndX-xLine.StartX)/len(plot.AxisX.Labels) - 1
 		y := plot.Height - padding
-		for i := xLine.StartX; i <= xLine.EndX; i += xInterval {
+		labelx := -1
+		for i := xLine.StartX; i < xLine.EndX; i += xInterval {
 			plot.AddLine(NewLine(i, y-5, i, y+5, plot.AxisX.Width, plot.AxisX.Color))
+			if labelx != -1 {
+				text := plot.AxisX.Labels[labelx].Name
+				textLength := len(text)
+				X := i - (4 * textLength)
+				plot.plotText(img, X, y+20, plot.AxisX.Labels[labelx].Name, plot.AxisX.Labels[labelx].Color)
+				plot.AxisX.Labels[labelx].SetPosition(X)
+				fmt.Println(plot.AxisX.Labels[labelx].Position)
+			}
+
+			labelx++
 		}
 
 	}
 
+	labely := len(plot.AxisY.Labels) - 1
 	if len(plot.AxisY.Labels) > 0 {
 		yInterval := (yLine.EndY - yLine.StartY) / len(plot.AxisY.Labels)
 		x := padding
 		for i := yLine.StartY; i <= yLine.EndY; i += yInterval {
 			plot.AddLine(NewLine(x-5, i, x+5, i, plot.AxisY.Width, plot.AxisY.Color))
+			if labely != -1 {
+				text := plot.AxisY.Labels[labely].Name
+				textWidth := len(text) * 8
+				plot.plotText(img, x-textWidth-5, i, text, plot.AxisY.Labels[labely].Color)
+				plot.AxisY.Labels[labely].Position = i
+			}
+			labely--
 		}
 
 	}
