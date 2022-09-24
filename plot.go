@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"math"
 	"os"
 )
 
@@ -13,6 +14,7 @@ type Plot struct {
 	BackroundColor        color.Color
 	Points                []Point
 	Lines                 []Line
+	AxisX, AxisY          Axis
 }
 
 func NewPlot(width, height int) *Plot {
@@ -34,6 +36,7 @@ func (plot *Plot) Draw(path string) error {
 			img.Set(x, y, plot.BackroundColor)
 		}
 	}
+
 	img = plot.plotLines(img)
 	img = plot.plotPoints(img)
 
@@ -85,14 +88,51 @@ func (plot *Plot) AddLines(lines []Line) {
 
 func (plot *Plot) plotLines(img *image.RGBA) *image.RGBA {
 	for _, line := range plot.Lines {
-		slope := float64(line.EndY-line.StartY) / float64(line.EndX-line.StartX)
-		intercept := float64(line.StartY) - (slope * float64(line.StartX))
-		for x := line.StartX; x <= line.EndX; x++ {
-			y := int(float64(x)*slope + intercept)
-			for i := y - int(line.Width/2); i <= y+int(line.Width/2); i++ {
-				img.Set(x, i, color.Black)
+		x0, x1, y0, y1 := line.StartX-line.Width/2, line.EndX-line.Width/2, line.StartY, line.EndY
+		img = bresenhamLine(x0, x1, y0, y1, img)
+	}
+	return img
+}
+
+func bresenhamLine(x0, x1, y0, y1 int, img *image.RGBA) *image.RGBA {
+	x := x0
+	y := y0
+	dx := int(math.Abs(float64(x1-x0)) + 0.5)
+	dy := int(math.Abs(float64(y1-y0)) + 0.5)
+	sx, sy := 1, 1
+	if x0 >= x1 {
+		sx = -1
+	}
+	if y0 >= y1 {
+		sy = -1
+	}
+
+	interchane := 0
+
+	if dy > dx {
+		temp := dy
+		dy = dx
+		dx = temp
+		interchane = 1
+	}
+	err := 2*dy - dx
+
+	for i := 0; i < dx-1; i++ {
+		if err > 0 {
+			if interchane == 1 {
+				x += sx
+			} else {
+				y += sy
 			}
+			err -= 2 * dx
 		}
+		if interchane == 1 {
+			y += sy
+		} else {
+			x += sx
+		}
+		err += 2 * dy
+		img.Set(x, y, color.Black)
 	}
 	return img
 }
