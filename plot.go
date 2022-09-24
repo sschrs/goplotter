@@ -1,58 +1,64 @@
 package goplotter
 
 import (
-	"fmt"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/inconsolata"
 	"golang.org/x/image/math/fixed"
 	"image"
 	"image/color"
-	"image/png"
-	"os"
+)
+
+const (
+	fontWidth  = 8
+	fontHeight = 16
 )
 
 type Plot struct {
-	Width, Height         int
-	Title, XLabel, YLabel string
-	BackroundColor        color.Color
-	Points                []Point
-	Lines                 []Line
-	AxisX, AxisY          *Axis
+	Width, Height                                         int
+	Title, XLabel, YLabel                                 string
+	BackgroundColor, TitleColor, XLabelColor, YLabelColor color.Color
+	Points                                                []Point
+	Lines                                                 []Line
+	AxisX, AxisY                                          *Axis
 }
 
 func NewPlot(width, height int, axisX, axisY *Axis) *Plot {
 	return &Plot{
-		Width:          width,
-		Height:         height,
-		BackroundColor: color.White,
-		AxisX:          axisX,
-		AxisY:          axisY,
+		Width:           width,
+		Height:          height,
+		BackgroundColor: color.White,
+		AxisX:           axisX,
+		AxisY:           axisY,
+		TitleColor:      color.Black,
+		XLabelColor:     color.Black,
+		YLabelColor:     color.Black,
 	}
 }
 
-func (plot *Plot) Draw(path string) error {
+func (plot *Plot) Draw() *image.RGBA {
+	// Create an empty image
 	upLeft := image.Point{X: 0, Y: 0}
 	lowReight := image.Point{X: plot.Width, Y: plot.Height}
-
 	img := image.NewRGBA(image.Rectangle{upLeft, lowReight})
 
+	// Fill the image with background color
 	for x := 0; x < plot.Width; x++ {
 		for y := 0; y < plot.Height; y++ {
-			img.Set(x, y, plot.BackroundColor)
+			img.Set(x, y, plot.BackgroundColor)
 		}
 	}
+
+	if plot.Title != "" {
+		titleWidth := len(plot.Title) * fontWidth
+		firstPoint := (plot.Width / 2) - (titleWidth / 2)
+		plot.plotText(img, firstPoint, 40, plot.Title, plot.TitleColor)
+	}
+
 	plot.plotAxes(img)
 	img = plot.plotLines(img)
 	img = plot.plotPoints(img)
 
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-
-	png.Encode(f, img)
-
-	return nil
+	return img
 }
 
 func (plot *Plot) AddPoint(point Point) {
@@ -90,10 +96,9 @@ func (plot *Plot) plotAxes(img *image.RGBA) {
 			if labelx != -1 {
 				text := plot.AxisX.Labels[labelx].Name
 				textLength := len(text)
-				X := i - (4 * textLength)
+				X := i - (fontWidth / 2 * textLength)
 				plot.plotText(img, X, y+20, plot.AxisX.Labels[labelx].Name, plot.AxisX.Labels[labelx].Color)
-				plot.AxisX.Labels[labelx].SetPosition(X)
-				fmt.Println(plot.AxisX.Labels[labelx].Position)
+				plot.AxisX.Labels[labelx].SetPosition(i)
 			}
 
 			labelx++
@@ -109,7 +114,7 @@ func (plot *Plot) plotAxes(img *image.RGBA) {
 			plot.AddLine(NewLine(x-5, i, x+5, i, plot.AxisY.Width, plot.AxisY.Color))
 			if labely != -1 {
 				text := plot.AxisY.Labels[labely].Name
-				textWidth := len(text) * 8
+				textWidth := len(text) * fontWidth
 				plot.plotText(img, x-textWidth-5, i, text, plot.AxisY.Labels[labely].Color)
 				plot.AxisY.Labels[labely].Position = i
 			}
