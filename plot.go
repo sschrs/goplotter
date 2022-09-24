@@ -34,8 +34,9 @@ func (plot *Plot) Draw(path string) error {
 			img.Set(x, y, plot.BackroundColor)
 		}
 	}
-	img = plot.plotPoints(img)
 	img = plot.plotLines(img)
+	img = plot.plotPoints(img)
+
 	f, err := os.Create(path)
 	if err != nil {
 		return err
