@@ -7,3 +7,11 @@ type Axis struct {
 	Width  int
 	Color  color.Color
 }
+
+func NewAxis(labels []string, width int, clr color.Color) Axis {
+	return Axis{
+		Labels: labels,
+		Width:  width,
+		Color:  clr,
+	}
+}
