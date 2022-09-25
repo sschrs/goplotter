@@ -20,6 +20,7 @@ type Plot struct {
 	Points                                                []Point
 	Lines                                                 []Line
 	AxisX, AxisY                                          *Axis
+	Legend                                                Legend
 }
 
 func NewPlot(width, height int, axisX, axisY *Axis) *Plot {
@@ -57,6 +58,7 @@ func (plot *Plot) Draw() *image.RGBA {
 	plot.plotAxes(img)
 	img = plot.plotLines(img)
 	img = plot.plotPoints(img)
+	plot.plotLegend(img)
 
 	return img
 }
@@ -174,4 +176,16 @@ func (plot *Plot) plotText(img *image.RGBA, x, y int, text string, clr color.Col
 	}
 
 	d.DrawString(text)
+}
+
+func (plot *Plot) plotLegend(img *image.RGBA) {
+	if len(plot.Legend.Items) > 0 {
+		// Create legend rectangle with background color
+		for x := plot.Legend.X; x <= plot.Legend.Width+plot.Legend.X; x++ {
+			for y := plot.Legend.Y; y <= plot.Legend.Height+plot.Legend.Y; y++ {
+				img.Set(x, y, plot.Legend.BackgroundColor)
+			}
+		}
+
+	}
 }
