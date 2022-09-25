@@ -186,6 +186,7 @@ func (plot *Plot) plotLegend(img *image.RGBA) {
 				img.Set(x, y, plot.Legend.BackgroundColor)
 			}
 		}
+		g
 
 	}
 }
