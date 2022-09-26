@@ -186,7 +186,30 @@ func (plot *Plot) plotLegend(img *image.RGBA) {
 				img.Set(x, y, plot.Legend.BackgroundColor)
 			}
 		}
-		g
+
+		// Add legend title
+		x := (plot.Legend.X + plot.Legend.Width/2) - (len(plot.Legend.Title)*fontWidth)/2
+		y := plot.Legend.Y + 30
+		plot.plotText(img, x, y, plot.Legend.Title, plot.Legend.TitleColor)
+
+		// Add Legend Items
+		x = plot.Legend.X + 20
+		y = plot.Legend.Y + 60
+		for _, item := range plot.Legend.Items {
+			point := NewPoint(x, y, item.Symbol)
+			point.X -= point.pointShape.Bounds().Size().X / 2
+			point.Y -= point.pointShape.Bounds().Size().Y / 2
+			for x := point.X; x <= point.X+point.pointShape.Bounds().Size().X; x++ {
+				for y := point.Y; y <= point.Y+point.pointShape.Bounds().Size().Y; y++ {
+					r, g, b, a := point.pointShape.At(x-point.X, y-point.Y).RGBA()
+					if r != 0 || g != 0 || b != 0 || a != 0 {
+						img.Set(x, y, color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)})
+					}
+				}
+			}
+			plot.plotText(img, x+point.pointShape.Bounds().Size().X+5, y+point.pointShape.Bounds().Size().Y/2-4, item.Text, item.TextColor)
+			y += 30
+		}
 
 	}
 }
