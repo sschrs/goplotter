@@ -12,7 +12,8 @@ type ScatterPlotter struct {
 	XValues, YValues                                      []float64
 	Title, XLabel, YLabel                                 string
 	BackgroundColor, TitleColor, XLabelColor, YLabelColor color.Color
-	Legend                                                bool
+	AddLegend                                             bool
+	Legend                                                *goplotter.Legend
 	Width, Height                                         int
 	PointShape                                            goplotter.Shape
 	XRange, YRange                                        Range
@@ -26,7 +27,7 @@ func NewScatterPlot(x, y []float64) *ScatterPlotter {
 		YLabelColor:     color.Black,
 		BackgroundColor: color.White,
 		TitleColor:      color.Black,
-		Legend:          false,
+		AddLegend:       false,
 		Width:           1280,
 		Height:          720,
 		PointShape:      goplotter.NewCircle(5, color.RGBA{R: 255, A: 255}),
@@ -98,5 +99,24 @@ func (sp *ScatterPlotter) Plot() *image.RGBA {
 		plot.AddPoint(goplotter.NewPoint(int(xPosition+0.5), int(yPosition+0.5), sp.PointShape))
 	}
 
+	// Add Legend
+	if sp.AddLegend {
+		plot.Legend = *sp.Legend
+	}
+
 	return plot.Draw()
+}
+
+func (sp *ScatterPlotter) AppendLegend(legendTitle string, items map[string]color.RGBA) {
+	var legendItems []*goplotter.LegendItem
+
+	for name, color := range items {
+		legendItems = append(legendItems, goplotter.NewLegendItem(name, goplotter.NewRectangle(6, 6, color)))
+	}
+	width := 200
+	height := (len(items) * 16) + 90
+	x := sp.Width - 230
+	y := sp.Height - height - 100
+	sp.Legend = goplotter.NewLegend(legendTitle, legendItems, width, height, x, y)
+	sp.AddLegend = true
 }
