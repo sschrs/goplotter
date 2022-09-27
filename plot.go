@@ -90,18 +90,17 @@ func (plot *Plot) plotAxes(img *image.RGBA) {
 	plot.AddLines([]Line{xLine, yLine})
 
 	if len(plot.AxisX.Labels) > 0 {
-		xInterval := (xLine.EndX-xLine.StartX)/len(plot.AxisX.Labels) - 1
+		xInterval := (xLine.EndX - xLine.StartX) / (len(plot.AxisX.Labels) - 1)
 		y := plot.Height - padding
-		labelx := -1
-		for i := xLine.StartX; i < xLine.EndX; i += xInterval {
+		labelx := 0
+		for i := xLine.StartX; i <= xLine.EndX; i += xInterval {
 			plot.AddLine(NewLine(i, y-5, i, y+5, plot.AxisX.Width, plot.AxisX.Color))
-			if labelx != -1 {
-				text := plot.AxisX.Labels[labelx].Name
-				textLength := len(text)
-				X := i - (fontWidth / 2 * textLength)
-				plot.plotText(img, X, y+20, plot.AxisX.Labels[labelx].Name, plot.AxisX.Labels[labelx].Color)
-				plot.AxisX.Labels[labelx].SetPosition(i)
-			}
+
+			text := plot.AxisX.Labels[labelx].Name
+			textLength := len(text)
+			X := i - (fontWidth / 2 * textLength)
+			plot.plotText(img, X, y+20, plot.AxisX.Labels[labelx].Name, plot.AxisX.Labels[labelx].Color)
+			plot.AxisX.Labels[labelx].SetPosition(i)
 
 			labelx++
 		}
@@ -110,7 +109,7 @@ func (plot *Plot) plotAxes(img *image.RGBA) {
 
 	labely := len(plot.AxisY.Labels) - 1
 	if len(plot.AxisY.Labels) > 0 {
-		yInterval := (yLine.EndY - yLine.StartY) / len(plot.AxisY.Labels)
+		yInterval := (yLine.EndY - yLine.StartY) / (len(plot.AxisY.Labels) - 1)
 		x := padding
 		for i := yLine.StartY; i <= yLine.EndY; i += yInterval {
 			plot.AddLine(NewLine(x-5, i, x+5, i, plot.AxisY.Width, plot.AxisY.Color))
