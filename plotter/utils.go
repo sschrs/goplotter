@@ -1,6 +1,6 @@
 package plotter
 
-func MinMax(array []float64) (float64, float64) {
+func minMax(array []float64) (float64, float64) {
 	var max float64 = array[0]
 	var min float64 = array[0]
 	for _, value := range array {
